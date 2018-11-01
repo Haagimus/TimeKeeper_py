@@ -25,7 +25,6 @@ class MainWindow(QMainWindow):
         self.statusBar()
         self.setWindowIcon(QIcon('timetable.ico'))
         self.setWindowTitle('Time Logger')
-        # self.setFixedSize(600, 600)
 
         self.resize(600, 600)
 
