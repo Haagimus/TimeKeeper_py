@@ -5,6 +5,7 @@ gblPgmList = [[], []]
 filepath = expanduser('~\AppData\Local\Programs\TimeKeeper\\')
 dtg = strftime('%D %H:%M:%S', localtime())
 changes_saved = False
+pgm_combo_selection = ''
 
 # Initialization messages
 msgInitLog = dtg + ': Initializing the Data Log Grid'

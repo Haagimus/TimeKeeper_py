@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(quit_action)
         help_menu.addAction(about_menu)
 
-        # Bind the created options to the target functions and setup hotkeys
+        # Bind the created options to the target functions and setup hot keys
         save_action.triggered.connect(self.save_event)
         save_action.setShortcut(QKeySequence.Save)
         edit_action.triggered.connect(self.time_logger_widget.edit_programs)
@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
         # Redirect the native esc hot key to the close event prompt
         if event.key() == Qt.Key_Escape:
             self.close()
-        # Add delete hotkey, if a row is actively selected in the dg_log, delete it
+        # Add delete hot key, if a row is actively selected in the dg_log, delete it
         if event.key() == Qt.Key_Delete and self.time_logger_widget.dg_log.hasFocus() is True:
             result = QMessageBox.question(self, 'Confirm Delete', Globals.strDeleteLog,
                                           QMessageBox.Yes | QMessageBox.No)
@@ -324,12 +324,16 @@ class UiProgramEditor(QDialog):
     def __init__(self, parent=None):
         super(UiProgramEditor, self).__init__(parent)
 
+        # Get the current programs combo box selection from the main window
+        Globals.pgm_combo_selection = mw.time_logger_widget.cmb_pgm.currentText()
+
         self.setWindowTitle('Programs Config')
 
         # Create the window buttons and fields
         self.list_programs = QListWidget(self)
         self.btn_delete = QPushButton('Delete Program')
         self.btn_add = QPushButton('Add Program')
+        self.list_programs.setDragDropMode(QAbstractItemView.InternalMove)
 
         self.list_programs.addItems(Globals.gblPgmList[0])
         self.btn_delete.setEnabled(False)
@@ -376,9 +380,30 @@ class UiProgramEditor(QDialog):
             self.list_programs.addItem(text)
             Globals.changes_saved = False
 
+    def update_programs(self):
+        # Create and populate a temporary programs list based on the list box contents and order
+        temp_program_list = [[], []]
+        for t_pgm in range(self.list_programs.count()):
+            temp_program_list[0].append(self.list_programs.item(t_pgm).text())
+            temp_program_list[1].append(0.0)
+
+        for t_pgm in temp_program_list[0]:
+            # loop through the global programs list
+            for g_pgm in range(len(Globals.gblPgmList[0])):
+                # If a match is found, copy the time value to the temp list
+                if Globals.gblPgmList[0][g_pgm] == t_pgm:
+                    t_idx = temp_program_list[0].index(t_pgm)
+                    g_idx = Globals.gblPgmList[0].index(t_pgm)
+                    temp_program_list[1][t_idx] = Globals.gblPgmList[1][g_idx]
+        # Replace the global programs list with the newly created temp programs list
+        Globals.gblPgmList = temp_program_list
+
     def closeEvent(self, event):
-        print(Globals.msgCloseEditor)
+        self.update_programs()
         mw.time_logger_widget.populate_programs_combo(Globals.gblPgmList)
+        # Find the previously selected combo box text and set it as the current item in case it moved
+        mw.time_logger_widget.cmb_pgm.setCurrentIndex(
+            mw.time_logger_widget.cmb_pgm.findText(Globals.pgm_combo_selection))
         mw.time_logger_widget.populate_totals_grid()
         mw.show()
         mw.time_logger_widget.show()
