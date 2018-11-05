@@ -11,7 +11,7 @@ class DigitalClock(QLCDNumber):
         timer.start(1000)
         self.show_time()
         self.setWindowTitle('Digital Clock')
-        self.resize(150, 60)
+        self.resize(100, 60)
 
     def show_time(self):
         time = QTime.currentTime()

@@ -119,8 +119,17 @@ class TimeLoggerUi(QWidget):
         self.grid = QGridLayout()
         self.grid.setColumnStretch(0, 0)
         self.grid.setRowStretch(0, 1)
+        self.grid.setColumnMinimumWidth(0, 100)
+        self.grid.setColumnMinimumWidth(1, 100)
 
         # Add the programs combo box
+        self.cmb_pgm.setFixedWidth(100)
+        self.cmb_pgm.setStyleSheet('''*
+            QComboBox QAbstractItemView
+                {
+                min-width: 150px;
+                }
+        ''')
         self.grid.addWidget(QLabel('Select a program:'), 0, 0)
         self.grid.addWidget(self.cmb_pgm, 0, 1, 1, 1)
 
@@ -145,9 +154,9 @@ class TimeLoggerUi(QWidget):
         self.btn_dt.clicked.connect(self.open_deltek)
 
         # Add the current time clock
-        self.grid.addWidget(self.time_label, 4, 0, 1, 1)
+        self.grid.addWidget(self.time_label, 4, 0, 2, 1)
         self.time_label.setText('Time: ')
-        self.time_label.setFont(QFont('Times', 20, QFont.Normal))
+        self.time_label.setFont(QFont('Times', 16, QFont.Normal))
         self.time_label.setAlignment(Qt.AlignRight)
         self.grid.addWidget(self.DigitalClock, 4, 1, 1, 1)
         self.DigitalClock.setFrameStyle(QFrame.NoFrame)
