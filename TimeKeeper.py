@@ -5,17 +5,14 @@ from math import floor
 from os import path
 from time import localtime, strftime
 
-from PySide2 import QtCore
-
-from DigitalClock import DigitalClock
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QKeySequence, QFont
 from PySide2.QtWidgets import (QApplication, QComboBox, QDialog, QWidget, QGridLayout, QHBoxLayout, QHeaderView,
                                QInputDialog, QLabel, QListWidget, QMessageBox, QPushButton, QTableWidget,
-                               QTableWidgetItem, QVBoxLayout, QMainWindow, QAction, QFrame, QAbstractItemView,
-                               QAbstractItemDelegate)
+                               QTableWidgetItem, QVBoxLayout, QMainWindow, QAction, QFrame, QAbstractItemView)
 
 import Globals
+from DigitalClock import DigitalClock
 from json_editor import gui_restore, gui_save
 
 
@@ -191,7 +188,6 @@ class TimeLoggerUi(QWidget):
             for row in range(self.dg_log.rowCount()):
                 if self.dg_log.item(row, 0).text() == self.dg_log.item(row + 1, 0).text() and \
                         self.dg_log.item(row, 2).text() == 'In' and self.dg_log.item(row + 1, 2).text() == 'Out':
-                    print('row: {} and {} in the log table match, updating calculated times'.format(row, row + 1))
                     start_time = self.dg_log.item(row, 1).text()
                     end_time = self.dg_log.item(row + 1, 1).text()
                     time_diff = datetime.strptime(end_time, '%H:%M') - datetime.strptime(start_time, '%H:%M')
@@ -199,13 +195,15 @@ class TimeLoggerUi(QWidget):
                     self.dg_log.setItem(row + 1, 3,
                                         QTableWidgetItem(str(floor((time_diff.seconds / 60 / 60) * 10) / 10.0)))
                     self.dg_log.blockSignals(False)
+            self.update_totals()
+
         except AttributeError:
             pass
-        self.update_totals()
 
     def init_data_log(self):
         # Setup and add the data log grid
         print(Globals.msgInitLog)
+        self.dg_log.blockSignals(True)
         self.dg_log.setColumnCount(4)
         self.dg_log.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.dg_log.verticalHeader().setVisible(False)
@@ -216,6 +214,7 @@ class TimeLoggerUi(QWidget):
         dg_log_header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
         self.dg_log.setHorizontalHeaderLabels(('Program', 'Time', 'In/Out', 'Hours'))
         self.grid.addWidget(self.dg_log, 0, 2, 8, 4)
+        self.dg_log.blockSignals(False)
 
     def init_totals_log(self):
         # Setup and add the totals log grid
@@ -250,21 +249,28 @@ class TimeLoggerUi(QWidget):
 
     def update_totals(self):
         print(Globals.msgUpdateTotals)
+        self.dg_log.blockSignals(True)
         for hrs in range(len(Globals.gblPgmList[1])):
             Globals.gblPgmList[1][hrs] = 0.0
         # Update the calculated totals in the totals gid
         for pgm in Globals.gblPgmList[0]:
             for i in range(self.dg_log.rowCount()):
-                if self.dg_log.item(i + 1, 0):
-                    if self.dg_log.item(i, 2).text() == 'Out' and self.dg_log.item(i, 0).text() == pgm:
-                        p_idx = Globals.gblPgmList[0].index(pgm)
-                        Globals.gblPgmList[1][p_idx] += float(self.dg_log.item(i, 3).text())
-        self.total_time.setText('Total: ' + str(floor(sum((Globals.gblPgmList[1]) * 10)) / 10.0))
+                if self.dg_log.item(i, 2).text() == 'Out' and self.dg_log.item(i, 0).text() == pgm:
+                    p_idx = Globals.gblPgmList[0].index(pgm)
+                    Globals.gblPgmList[1][p_idx] += float(self.dg_log.item(i, 3).text())
+
         self.populate_totals_grid()
+        total_hrs = 0.0
+        for row in range(self.dg_totals.rowCount()):
+            total_hrs += float(self.dg_totals.item(row, 1).text())
+
+        self.total_time.setText('Total: ' + str(round(total_hrs, 1)))
+        self.dg_log.blockSignals(False)
 
     def clock_in(self):
         # Clock in to selected program
         print(Globals.msgClockIn)
+        self.dg_log.blockSignals(True)
         current_time = localtime()
         next_row = self.dg_log.rowCount()
         self.dg_log.insertRow(next_row)
@@ -273,10 +279,12 @@ class TimeLoggerUi(QWidget):
         self.dg_log.setItem(next_row, 2, QTableWidgetItem('In'))
         self.dg_log.scrollToBottom()
         Globals.changes_saved = False
+        self.dg_log.blockSignals(False)
 
     def clock_out(self):
         # Clock out of selected program
         print(Globals.msgClockOut)
+        self.dg_log.blockSignals(True)
         end_time = strftime('%H:%M', localtime())
         next_row = self.dg_log.rowCount()
         self.dg_log.insertRow(next_row)
@@ -297,6 +305,7 @@ class TimeLoggerUi(QWidget):
             self.update_totals()
         self.dg_log.scrollToBottom()
         Globals.changes_saved = False
+        self.dg_log.blockSignals(False)
 
     def edit_programs(self):
         # Show the edit programs dialog
@@ -314,8 +323,10 @@ class TimeLoggerUi(QWidget):
             print(Globals.msgResetAbort)
         else:
             print(Globals.msgResetConfirm)
+            self.dg_log.blockSignals(True)
             while self.dg_log.rowCount() > 0:
                 self.dg_log.removeRow(0)
+            self.dg_log.blockSignals(False)
             while self.dg_totals.rowCount() > 0:
                 self.dg_totals.removeRow(0)
             for pgm in range(len(Globals.gblPgmList[1])):
