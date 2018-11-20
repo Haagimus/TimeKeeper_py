@@ -5,12 +5,15 @@ from math import floor
 from os import path
 from time import localtime, strftime
 
+from PySide2 import QtCore
+
 from DigitalClock import DigitalClock
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QKeySequence, QFont
 from PySide2.QtWidgets import (QApplication, QComboBox, QDialog, QWidget, QGridLayout, QHBoxLayout, QHeaderView,
                                QInputDialog, QLabel, QListWidget, QMessageBox, QPushButton, QTableWidget,
-                               QTableWidgetItem, QVBoxLayout, QMainWindow, QAction, QFrame, QAbstractItemView)
+                               QTableWidgetItem, QVBoxLayout, QMainWindow, QAction, QFrame, QAbstractItemView,
+                               QAbstractItemDelegate)
 
 import Globals
 from json_editor import gui_restore, gui_save
@@ -166,7 +169,7 @@ class TimeLoggerUi(QWidget):
         # self.calendar.setGridVisible(True)
 
         self.init_data_log()
-        self.dg_log.itemChanged.connect(self.manual_log_update)
+        self.dg_log.cellChanged.connect(self.manual_log_update)
         self.init_totals_log()
 
         self.setLayout(self.grid)
@@ -183,15 +186,22 @@ class TimeLoggerUi(QWidget):
         MainWindow.statusBar(self.parent()).showMessage(message)
 
     def manual_log_update(self):
-        # TODO: setup manual updates to trigger a recalculation on log entries
         Globals.changes_saved = False
-        item_row = self.dg_log.currentRow()
-        item_col = self.dg_log.currentColumn()
         try:
-            if item_col == 2:
-                print(self.dg_log.item(item_row, item_col).text())
+            for row in range(self.dg_log.rowCount()):
+                if self.dg_log.item(row, 0).text() == self.dg_log.item(row + 1, 0).text() and \
+                        self.dg_log.item(row, 2).text() == 'In' and self.dg_log.item(row + 1, 2).text() == 'Out':
+                    print('row: {} and {} in the log table match, updating calculated times'.format(row, row + 1))
+                    start_time = self.dg_log.item(row, 1).text()
+                    end_time = self.dg_log.item(row + 1, 1).text()
+                    time_diff = datetime.strptime(end_time, '%H:%M') - datetime.strptime(start_time, '%H:%M')
+                    self.dg_log.blockSignals(True)
+                    self.dg_log.setItem(row + 1, 3,
+                                        QTableWidgetItem(str(floor((time_diff.seconds / 60 / 60) * 10) / 10.0)))
+                    self.dg_log.blockSignals(False)
         except AttributeError:
             pass
+        self.update_totals()
 
     def init_data_log(self):
         # Setup and add the data log grid
@@ -245,9 +255,10 @@ class TimeLoggerUi(QWidget):
         # Update the calculated totals in the totals gid
         for pgm in Globals.gblPgmList[0]:
             for i in range(self.dg_log.rowCount()):
-                if self.dg_log.item(i, 2).text() == 'Out' and self.dg_log.item(i, 0).text() == pgm:
-                    p_idx = Globals.gblPgmList[0].index(pgm)
-                    Globals.gblPgmList[1][p_idx] += float(self.dg_log.item(i, 3).text())
+                if self.dg_log.item(i + 1, 0):
+                    if self.dg_log.item(i, 2).text() == 'Out' and self.dg_log.item(i, 0).text() == pgm:
+                        p_idx = Globals.gblPgmList[0].index(pgm)
+                        Globals.gblPgmList[1][p_idx] += float(self.dg_log.item(i, 3).text())
         self.total_time.setText('Total: ' + str(floor(sum((Globals.gblPgmList[1]) * 10)) / 10.0))
         self.populate_totals_grid()
 
