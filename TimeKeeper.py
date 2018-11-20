@@ -253,11 +253,13 @@ class TimeLoggerUi(QWidget):
             Globals.gblPgmList[1][hrs] = 0.0
         # Update the calculated totals in the totals gid
         for pgm in Globals.gblPgmList[0]:
-            for i in range(self.dg_log.rowCount()):
-                if self.dg_log.item(i, 2).text() == 'Out' and self.dg_log.item(i, 0).text() == pgm:
-                    p_idx = Globals.gblPgmList[0].index(pgm)
-                    Globals.gblPgmList[1][p_idx] += float(self.dg_log.item(i, 3).text())
-
+            try:
+                for i in range(self.dg_log.rowCount()):
+                    if self.dg_log.item(i, 2).text() == 'Out' and self.dg_log.item(i, 0).text() == pgm:
+                        p_idx = Globals.gblPgmList[0].index(pgm)
+                        Globals.gblPgmList[1][p_idx] += float(self.dg_log.item(i, 3).text())
+            except AttributeError:
+                pass
         self.populate_totals_grid()
         total_hrs = 0.0
         for row in range(self.dg_totals.rowCount()):
