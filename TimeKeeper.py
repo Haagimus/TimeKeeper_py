@@ -195,10 +195,9 @@ class TimeLoggerUi(QWidget):
                     self.dg_log.setItem(row + 1, 3,
                                         QTableWidgetItem(str(floor((time_diff.seconds / 60 / 60) * 10) / 10.0)))
                     self.dg_log.blockSignals(False)
-            self.update_totals()
-
         except AttributeError:
             pass
+        self.update_totals()
 
     def init_data_log(self):
         # Setup and add the data log grid
