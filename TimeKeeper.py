@@ -172,6 +172,7 @@ class TimeLoggerUi(QWidget):
         self.init_totals_log()
 
         self.setLayout(self.grid)
+        self.comment = None
 
         if path.exists(Globals.filepath + 'time_keeper.json'):
             while self.dg_totals.rowCount() > 0:
@@ -181,25 +182,29 @@ class TimeLoggerUi(QWidget):
         else:
             pass
 
+        Globals.loading = False
+        print(Globals.msgLoadingComplete)
+
     def update_status(self, message):
         MainWindow.statusBar(self.parent()).showMessage(message)
 
     def manual_log_update(self):
-        Globals.changes_saved = False
-        try:
-            for row in range(self.dg_log.rowCount()):
-                if self.dg_log.item(row, 0).text() == self.dg_log.item(row + 1, 0).text() and \
-                        self.dg_log.item(row, 2).text() == 'In' and self.dg_log.item(row + 1, 2).text() == 'Out':
-                    start_time = self.dg_log.item(row, 1).text()
-                    end_time = self.dg_log.item(row + 1, 1).text()
-                    time_diff = datetime.strptime(end_time, '%H:%M') - datetime.strptime(start_time, '%H:%M')
-                    self.dg_log.blockSignals(True)
-                    self.dg_log.setItem(row + 1, 3,
-                                        QTableWidgetItem(str(floor((time_diff.seconds / 60 / 60) * 10) / 10.0)))
-                    self.dg_log.blockSignals(False)
-        except AttributeError:
-            pass
-        self.update_totals()
+        if not Globals.loading:
+            Globals.changes_saved = False
+            try:
+                for row in range(self.dg_log.rowCount()):
+                    if self.dg_log.item(row, 0).text() == self.dg_log.item(row + 1, 0).text() and \
+                            self.dg_log.item(row, 2).text() == 'In' and self.dg_log.item(row + 1, 2).text() == 'Out':
+                        start_time = self.dg_log.item(row, 1).text()
+                        end_time = self.dg_log.item(row + 1, 1).text()
+                        time_diff = datetime.strptime(end_time, '%H:%M') - datetime.strptime(start_time, '%H:%M')
+                        self.dg_log.blockSignals(True)
+                        self.dg_log.setItem(row + 1, 3,
+                                            QTableWidgetItem(str(floor((time_diff.seconds / 60 / 60) * 10) / 10.0)))
+                        self.dg_log.blockSignals(False)
+            except AttributeError:
+                pass
+            self.update_totals()
 
     def init_data_log(self):
         # Setup and add the data log grid
@@ -247,6 +252,14 @@ class TimeLoggerUi(QWidget):
             hours = QTableWidgetItem(str(floor(int(Globals.gblPgmList[1][pgm] * 10)) / 10.0))
             self.dg_totals.setItem(pgm, 0, item)
             self.dg_totals.setItem(pgm, 1, hours)
+        # find the row that matches the current program selection
+        for row in range(self.dg_totals.rowCount()):
+            if self.dg_totals.item(row, 0).text() == self.cmb_pgm.currentText()\
+                    and self.comment is not None:
+                # append the entered comment, if entered, into the comments field
+                content = self.dg_totals.item(row, 2).text()
+                self.dg_totals.item(row, 2).setText('{}, {}'.format(content, self.comment))
+                self.comment = None
 
     def update_totals(self):
         print(Globals.msgUpdateTotals)
@@ -305,10 +318,16 @@ class TimeLoggerUi(QWidget):
                 time_diff = datetime.strptime(end_time, '%H:%M') - datetime.strptime(start_time, '%H:%M')
                 self.dg_log.setItem(next_row, 3,
                                     QTableWidgetItem(str(floor((time_diff.seconds / 60 / 60) * 10) / 10.0)))
+            self.get_comment()
             self.update_totals()
         self.dg_log.scrollToBottom()
         Globals.changes_saved = False
         self.dg_log.blockSignals(False)
+
+    def get_comment(self):
+        self.comment, ok = QInputDialog.getText(self, 'Comments', 'Enter comments for time entry')
+        if not ok:
+            self.comment = None
 
     def edit_programs(self):
         # Show the edit programs dialog

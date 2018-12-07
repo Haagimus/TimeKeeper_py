@@ -61,7 +61,8 @@ def gui_save(form):
                     time = '' if obj.item(row, 1).text() is None else obj.item(row, 1).text()
                     state = '' if obj.item(row, 2).text() is None else obj.item(row, 2).text()
                     hour = '' if obj.item(row, 3) is None else obj.item(row, 3).text()
-                    list_items.append({row: {'Program': pgm, 'Time': time, 'State': state, 'Hours': hour}})
+                    list_items.append(
+                        {row: {'Program': pgm, 'Time': time, 'State': state, 'Hours': hour}})
 
             if name == 'dg_totals':
                 for row in range(obj.rowCount()):
@@ -78,6 +79,7 @@ def gui_save(form):
 
     form.update_status('Last save at - ' + strftime('%c'))
     Globals.changes_saved = True
+
 
 # ===================================================================
 # restore "ui" controls with values stored in config.json

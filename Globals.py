@@ -7,12 +7,14 @@ dtg = strftime('%D %H:%M:%S', localtime())
 changes_saved = False
 pgm_combo_selection = ''
 deltek_url = 'http://dcwdte01.pes.sg.l-3com.com:7009/DeltekTC/welcome.msv'
+loading = True
 
 # Initialization messages
 msgInitLog = dtg + ': Initializing the Data Log Grid'
 msgInitTotals = dtg + ': Initializing the Totals Log Grid'
 msgInitMainDisplay = dtg + ': Initializing the main UI'
 msgInitPgmCombo = dtg + ': Initializing the Programs Combo box'
+msgLoadingComplete = dtg + ': Application loading complete'
 
 # Function call messages
 msgClockIn = dtg + ': Executing the Clock In function'
