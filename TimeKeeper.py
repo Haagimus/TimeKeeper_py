@@ -1,7 +1,5 @@
 import sys
 import webbrowser
-import requests
-import bs4
 from datetime import datetime
 from math import floor
 from os import path
@@ -361,28 +359,7 @@ class TimeLoggerUi(QWidget):
     def open_deltek():
         # Open the Deltek web page
         print(Globals.msgOpenDeltek)
-        with requests.session() as r:
-            LOGIN = '10063088'
-            PASSWORD = 'the_P!ckle09'
-            DOMAIN = 'ISS'
-
-            response = r.get(Globals.deltek_url)
-
-            soup = bs4.BeautifulSoup(response.text, 'html.parser')
-            csrf = soup.find('input', {'id': 'uid'}).attrs['value']
-
-            print('uid:', csrf)
-
-            form_data = {
-                'uid': LOGIN,
-                'passField': PASSWORD,
-                'dom': DOMAIN,
-                'login': 'LogIn'
-            }
-
-            response = r.post(Globals.deltek_url, data=form_data)
-
-            webbrowser.open(response.content)
+        webbrowser.open(Globals.deltek_url)
 
 
 class UiProgramEditor(QDialog):
