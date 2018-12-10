@@ -253,10 +253,13 @@ class TimeLoggerUi(QWidget):
         # find the row that matches the current program selection
         for row in range(self.dg_totals.rowCount()):
             if self.dg_totals.item(row, 0).text() == self.cmb_pgm.currentText()\
-                    and self.comment is not None:
+                    and self.comment != '' and self.comment is not None:
                 # append the entered comment, if entered, into the comments field
                 content = self.dg_totals.item(row, 2).text()
-                self.dg_totals.item(row, 2).setText('{}, {}'.format(content, self.comment))
+                if content == '':
+                    self.dg_totals.item(row, 2).setText('{}'.format(self.comment))
+                else:
+                    self.dg_totals.item(row, 2).setText('{}, {}'.format(content, self.comment))
                 self.comment = None
 
     def update_totals(self):
