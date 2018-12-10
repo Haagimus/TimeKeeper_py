@@ -1,6 +1,7 @@
 from os.path import expanduser
 from time import strftime, localtime
 
+__version__ = 1, 0, 2, 0
 gblPgmList = [[], []]
 filepath = expanduser('~\AppData\Local\Programs\TimeKeeper\\')
 dtg = strftime('%D %H:%M:%S', localtime())
@@ -15,6 +16,7 @@ msgInitTotals = dtg + ': Initializing the Totals Log Grid'
 msgInitMainDisplay = dtg + ': Initializing the main UI'
 msgInitPgmCombo = dtg + ': Initializing the Programs Combo box'
 msgLoadingComplete = dtg + ': Application loading complete'
+msgCheckingVersion = dtg + ': Checking for application updates'
 
 # Function call messages
 msgClockIn = dtg + ': Executing the Clock In function'
@@ -42,6 +44,9 @@ strDelete = 'Are you sure you want to remove this program? This cannot be undone
 strDeleteLog = 'Are you sure you want to remove this log entry? This cannot be undone.'
 strResetTitle = 'Reset all data?'
 strDeleteTitle = 'Confirm Program Deletion'
+strUpdateTitle = 'Update Available'
+strUpdate = 'There is a newer version of this application available at X:\\PE\\00 New Hire Stuff.\n' \
+            'Please update to the latest version of this application.'
 
 
 # comment this out for testing which will cause the json to save in the

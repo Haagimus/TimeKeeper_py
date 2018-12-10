@@ -10,10 +10,21 @@ from PySide2.QtGui import QIcon, QKeySequence, QFont
 from PySide2.QtWidgets import (QApplication, QComboBox, QDialog, QWidget, QGridLayout, QHBoxLayout, QHeaderView,
                                QInputDialog, QLabel, QListWidget, QMessageBox, QPushButton, QTableWidget,
                                QTableWidgetItem, QVBoxLayout, QMainWindow, QAction, QFrame, QAbstractItemView)
+from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
 import Globals
 from DigitalClock import DigitalClock
 from json_editor import gui_restore, gui_save
+
+
+def get_version_number(filename):
+    try:
+        info = GetFileVersionInfo(filename, "\\")
+        ms = info['FileVersionMS']
+        ls = info['FileVersionLS']
+        return HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls)
+    except:
+        return 'Version not found'
 
 
 class MainWindow(QMainWindow):
@@ -23,7 +34,7 @@ class MainWindow(QMainWindow):
         self.time_logger_widget = TimeLoggerUi(parent=self)
         self.setCentralWidget(self.time_logger_widget)
         self.statusBar()
-        self.setWindowIcon(QIcon('timetable.ico'))
+        self.setWindowIcon(QIcon('timetable.png'))
         self.setWindowTitle('Time Logger')
 
         self.resize(600, 600)
@@ -61,6 +72,17 @@ class MainWindow(QMainWindow):
         about_menu.triggered.connect(self.about_info)
 
         Globals.changes_saved = True
+
+        print(Globals.msgCheckingVersion)
+        int_ver = get_version_number(sys.executable)
+        pub_ver = get_version_number('X:\\PE\\00 New Hire Stuff\\TimeKeeper.exe')
+        if pub_ver > int_ver or int_ver == "Version not found":
+            QMessageBox.information(self, Globals.strUpdateTitle,
+                                    Globals.strUpdate +
+                                    '\nCurrent Version: {}\nAvailable Version: {}\n'
+                                    .format(int_ver, pub_ver))
+        # TODO: reformat version numbers from tuples to decimal numbers
+
 
     def save_event(self):
         print(Globals.msgSave)
@@ -252,7 +274,7 @@ class TimeLoggerUi(QWidget):
             self.dg_totals.setItem(pgm, 1, hours)
         # find the row that matches the current program selection
         for row in range(self.dg_totals.rowCount()):
-            if self.dg_totals.item(row, 0).text() == self.cmb_pgm.currentText()\
+            if self.dg_totals.item(row, 0).text() == self.cmb_pgm.currentText() \
                     and self.comment != '' and self.comment is not None:
                 # append the entered comment, if entered, into the comments field
                 content = self.dg_totals.item(row, 2).text()
