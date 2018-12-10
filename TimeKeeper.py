@@ -1,7 +1,7 @@
 import sys
 import webbrowser
 from datetime import datetime
-from math import floor
+from math import ceil
 from os import path
 from time import localtime, strftime
 
@@ -198,7 +198,7 @@ class TimeLoggerUi(QWidget):
                         time_diff = datetime.strptime(end_time, '%H:%M') - datetime.strptime(start_time, '%H:%M')
                         self.dg_log.blockSignals(True)
                         self.dg_log.setItem(row + 1, 3,
-                                            QTableWidgetItem(str(floor((time_diff.seconds / 60 / 60) * 10) / 10.0)))
+                                            QTableWidgetItem(str(ceil((time_diff.seconds / 60 / 60) * 10) / 10.0)))
                         self.dg_log.blockSignals(False)
             except AttributeError:
                 pass
@@ -247,7 +247,7 @@ class TimeLoggerUi(QWidget):
         self.dg_totals.setRowCount(len(Globals.gblPgmList[0]))
         for pgm in range(len(Globals.gblPgmList[0])):
             item = QTableWidgetItem(Globals.gblPgmList[0][pgm])
-            hours = QTableWidgetItem(str(floor(int(Globals.gblPgmList[1][pgm] * 10)) / 10.0))
+            hours = QTableWidgetItem(str(ceil(int(Globals.gblPgmList[1][pgm] * 10)) / 10.0))
             self.dg_totals.setItem(pgm, 0, item)
             self.dg_totals.setItem(pgm, 1, hours)
         # find the row that matches the current program selection
@@ -318,7 +318,7 @@ class TimeLoggerUi(QWidget):
                 start_time = self.dg_log.item(next_row - 1, 1).text()
                 time_diff = datetime.strptime(end_time, '%H:%M') - datetime.strptime(start_time, '%H:%M')
                 self.dg_log.setItem(next_row, 3,
-                                    QTableWidgetItem(str(floor((time_diff.seconds / 60 / 60) * 10) / 10.0)))
+                                    QTableWidgetItem(str(ceil((time_diff.seconds / 60 / 60) * 10) / 10.0)))
             self.get_comment()
             self.update_totals()
         self.dg_log.scrollToBottom()
