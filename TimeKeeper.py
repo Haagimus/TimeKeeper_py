@@ -3,14 +3,15 @@ import webbrowser
 from datetime import datetime
 from math import ceil
 from os import path
+from subprocess import check_call
 from time import localtime, strftime
+from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QKeySequence, QFont
 from PySide2.QtWidgets import (QApplication, QComboBox, QDialog, QWidget, QGridLayout, QHBoxLayout, QHeaderView,
                                QInputDialog, QLabel, QListWidget, QMessageBox, QPushButton, QTableWidget,
                                QTableWidgetItem, QVBoxLayout, QMainWindow, QAction, QFrame, QAbstractItemView)
-from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
 import Globals
 from DigitalClock import DigitalClock
@@ -86,17 +87,24 @@ class MainWindow(QMainWindow):
 
     def version_check(self):
         print(Globals.msgCheckingVersion)
-        int_ver = get_version_number(sys.executable)
-        pub_ver = get_version_number('X:\\PE\\00 New Hire Stuff\\TimeKeeper.exe')
-        if pub_ver > int_ver:
-            QMessageBox.information(self, Globals.strUpdateTitle,
-                                    Globals.strUpdate +
-                                    '\nCurrent Version: {0}.{1}.{2}.{3}\n'
-                                    'Available Version: {4}.{5}.{6}.{7}\n'
-                                    .format(*int_ver, *pub_ver))
+        response = check_call(['ping', '-n', '1', '-w', '100', '166.20.109.130'], shell=True)
+        if response == 0:
+            int_ver = get_version_number(sys.executable)
+            pub_ver = get_version_number('X:\\PE\\00 New Hire Stuff\\TimeKeeper.exe')
+            if pub_ver > int_ver:
+                print(Globals.msgNewVersion)
+                QMessageBox.information(self, Globals.strUpdateTitle,
+                                        Globals.strUpdate +
+                                        '\nCurrent Version: {0}.{1}.{2}.{3}\n'
+                                        'Available Version: {4}.{5}.{6}.{7}\n'
+                                        .format(*int_ver, *pub_ver))
 
-        if pub_ver == int_ver and not Globals.loading:
-            QMessageBox.information(self, 'No Update', 'No updates are available at this time.')
+            if pub_ver == int_ver and not Globals.loading:
+                print(Globals.msgVersionGood)
+                QMessageBox.information(self, 'No Update', 'No updates are available at this time.')
+        else:
+            print(Globals.msgNetworkDown)
+            QMessageBox.information(self, 'Network unreachable', 'X drive cannot be reached, check network connection')
 
     def save_event(self):
         print(Globals.msgSave)

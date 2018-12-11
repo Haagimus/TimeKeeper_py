@@ -1,7 +1,6 @@
 from os.path import expanduser
 from time import strftime, localtime
 
-__version__ = 1, 0, 2, 0
 gblPgmList = [[], []]
 filepath = expanduser('~\AppData\Local\Programs\TimeKeeper\\')
 dtg = strftime('%D %H:%M:%S', localtime())
@@ -17,6 +16,9 @@ msgInitMainDisplay = dtg + ': Initializing the main UI'
 msgInitPgmCombo = dtg + ': Initializing the Programs Combo box'
 msgLoadingComplete = dtg + ': Application loading complete'
 msgCheckingVersion = dtg + ': Checking for application updates'
+msgNewVersion = dtg + ': A newer version of the application was found on the network'
+msgVersionGood = dtg + ': The current version of the application is the most recent'
+msgNetworkDown = dtg + ': The required network connection could not be found, aborting update check'
 
 # Function call messages
 msgClockIn = dtg + ': Executing the Clock In function'
