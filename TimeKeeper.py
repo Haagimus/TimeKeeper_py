@@ -52,13 +52,18 @@ class MainWindow(QMainWindow):
         reset_action = QAction('Reset Form', self)
         quit_action = QAction('Exit', self)
         about_menu = QAction('About', self)
+        update_action = QAction('Check for updates...', self)
 
-        # Add created options to the menus
+        # Populate the file menu
         file_menu.addAction(save_action)
         file_menu.addAction(edit_action)
         file_menu.addAction(reset_action)
         file_menu.addSeparator()
         file_menu.addAction(quit_action)
+
+        # Populate the help menu
+        help_menu.addAction(update_action)
+        help_menu.addSeparator()
         help_menu.addAction(about_menu)
 
         # Bind the created options to the target functions and setup hot keys
@@ -69,20 +74,29 @@ class MainWindow(QMainWindow):
         reset_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_R))
         quit_action.triggered.connect(self.closeEvent)
         quit_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_X))
+        update_action.triggered.connect(self.version_check)
         about_menu.triggered.connect(self.about_info)
 
         Globals.changes_saved = True
 
+        self.version_check()
+
+        Globals.loading = False
+        print(Globals.msgLoadingComplete)
+
+    def version_check(self):
         print(Globals.msgCheckingVersion)
         int_ver = get_version_number(sys.executable)
         pub_ver = get_version_number('X:\\PE\\00 New Hire Stuff\\TimeKeeper.exe')
-        if pub_ver > int_ver or int_ver == "Version not found":
+        if pub_ver > int_ver:
             QMessageBox.information(self, Globals.strUpdateTitle,
                                     Globals.strUpdate +
-                                    '\nCurrent Version: {}\nAvailable Version: {}\n'
-                                    .format(int_ver, pub_ver))
-        # TODO: reformat version numbers from tuples to decimal numbers
+                                    '\nCurrent Version: {0}.{1}.{2}.{3}\n'
+                                    'Available Version: {4}.{5}.{6}.{7}\n'
+                                    .format(*int_ver, *pub_ver))
 
+        if pub_ver == int_ver and not Globals.loading:
+            QMessageBox.information(self, 'No Update', 'No updates are available at this time.')
 
     def save_event(self):
         print(Globals.msgSave)
@@ -104,7 +118,7 @@ class MainWindow(QMainWindow):
     def about_info(self):
         email = 'mailto:Gary.Haag@L3T.com?Subject=Time%20Keeper%20App'
         QMessageBox.about(self, 'About TimeKeeper',
-                          'Version: 1.0<br>Creator: Gary Haag<br>Email: <a href=%s>Gary.Haag@L3T.com</a>' % email)
+                          'Version: 1.1<br>Creator: Gary Haag<br>Email: <a href=%s>Gary.Haag@L3T.com</a>' % email)
 
     def keyPressEvent(self, event):
         # Redirect the native esc hot key to the close event prompt
@@ -201,9 +215,6 @@ class TimeLoggerUi(QWidget):
             self.update_totals()
         else:
             pass
-
-        Globals.loading = False
-        print(Globals.msgLoadingComplete)
 
     def update_status(self, message):
         MainWindow.statusBar(self.parent()).showMessage(message)
