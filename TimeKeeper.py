@@ -1,9 +1,9 @@
+import subprocess
 import sys
 import webbrowser
 from datetime import datetime
 from math import ceil
 from os import path
-from subprocess import check_call
 from time import localtime, strftime
 from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
@@ -87,22 +87,23 @@ class MainWindow(QMainWindow):
 
     def version_check(self):
         print(Globals.msgCheckingVersion)
-        response = check_call(['ping', '-n', '1', '-w', '100', '166.20.109.130'], shell=True)
-        if response == 0:
-            int_ver = get_version_number(sys.executable)
-            pub_ver = get_version_number('X:\\PE\\00 New Hire Stuff\\TimeKeeper.exe')
-            if pub_ver > int_ver:
-                print(Globals.msgNewVersion)
-                QMessageBox.information(self, Globals.strUpdateTitle,
-                                        Globals.strUpdate +
-                                        '\nCurrent Version: {0}.{1}.{2}.{3}\n'
-                                        'Available Version: {4}.{5}.{6}.{7}\n'
-                                        .format(*int_ver, *pub_ver))
+        try:
+            response = subprocess.check_call(['ping', '-n', '1', '-w', '100', '166.20.109.130'], shell=True)
+            if response == 0:
+                int_ver = get_version_number(sys.executable)
+                pub_ver = get_version_number('X:\\PE\\00 New Hire Stuff\\TimeKeeper.exe')
+                if pub_ver > int_ver:
+                    print(Globals.msgNewVersion)
+                    QMessageBox.information(self, Globals.strUpdateTitle,
+                                            Globals.strUpdate +
+                                            '\nCurrent Version: {0}.{1}.{2}.{3}\n'
+                                            'Available Version: {4}.{5}.{6}.{7}\n'
+                                            .format(*int_ver, *pub_ver))
 
-            if pub_ver == int_ver and not Globals.loading:
-                print(Globals.msgVersionGood)
-                QMessageBox.information(self, 'No Update', 'No updates are available at this time.')
-        else:
+                if pub_ver == int_ver and not Globals.loading:
+                    print(Globals.msgVersionGood)
+                    QMessageBox.information(self, 'No Update', 'No updates are available at this time.')
+        except subprocess.CalledProcessError:
             print(Globals.msgNetworkDown)
             QMessageBox.information(self, 'Network unreachable', 'X drive cannot be reached, check network connection')
 
