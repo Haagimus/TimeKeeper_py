@@ -89,57 +89,60 @@ class MainWindow(QMainWindow):
 
     def version_check(self):
         print(Globals.msgCheckingVersion)
-        try:
-            response = subprocess.check_call(['ping', '-n', '1', '-w', '100', '166.20.109.130'], shell=True)
-            if response == 0:
-                int_ver = get_version_number(sys.executable)
-                pub_ver = get_version_number(Globals.distroLink)
-                if pub_ver > int_ver:
-                    print(Globals.msgNewVersion)
-                    msgBox = QMessageBox()
-                    msgBox.setWindowIcon(QIcon('timetable.png'))
-                    msgBox.setWindowTitle(Globals.strUpdateTitle)
-                    msgBox.setTextFormat(Qt.RichText)
-                    msgBox.setWindowFlag(Qt.WindowStaysOnTopHint)
-                    msgBox.setText('Current Version: {0}.{1}.{2}.{3}<br>'.format(*int_ver)
-                                   + 'Available Version: {0}.{1}.{2}.{3}<br><br>'.format(*pub_ver)
-                                   + 'Download Now?')
+        if not Globals.loading:
+            try:
+                response = subprocess.check_call(['ping', '-n', '1', '-w', '100', '166.20.109.130'], shell=True)
+                if response == 0:
+                    int_ver = get_version_number(sys.executable)
+                    pub_ver = get_version_number(Globals.distroLink)
+                    if pub_ver > int_ver:
+                        print(Globals.msgNewVersion)
+                        msgBox = QMessageBox()
+                        msgBox.setWindowIcon(QIcon('timetable.png'))
+                        msgBox.setWindowTitle(Globals.strUpdateTitle)
+                        msgBox.setTextFormat(Qt.RichText)
+                        msgBox.setWindowFlag(Qt.WindowStaysOnTopHint)
+                        msgBox.setText('Current Version: {0}.{1}.{2}.{3}<br>'.format(*int_ver)
+                                       + 'Available Version: {0}.{1}.{2}.{3}<br><br>'.format(*pub_ver)
+                                       + 'Download Now?')
 
-                    msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
-                    result = msgBox.exec_()
+                        msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
+                        result = msgBox.exec_()
 
-                    if result == QMessageBox.Save:
-                        dialog = QFileDialog()
-                        saveDir = dialog.getExistingDirectory(self, 'Select Save Directory')
-                        dialog.setAcceptMode(QFileDialog.AcceptSave)
-                        if saveDir != '':
-                            try:
-                                copyfile(Globals.distroLink, saveDir + '/TimeKeeper.exe')
-                                QMessageBox.information(self, 'Update Downloaded',
-                                                        'The latest version of the application has been downloaded'
-                                                        ' to\n\n{}.'.format(saveDir))
-                            except IOError:
-                                QMessageBox.warning(self, 'Download Error', 'The selected directory contains a file '
-                                                                            'with the name \"TimeKeeper.exe\" and '
-                                                                            'it is currently in use.\n\nTo try and '
-                                                                            'download to a different directory select '
-                                                                            '\"Check for updates...\" from the '
-                                                                            'Help menu once the programs launches.')
+                        if result == QMessageBox.Save:
+                            dialog = QFileDialog()
+                            saveDir = dialog.getExistingDirectory(self, 'Select Save Directory')
+                            dialog.setAcceptMode(QFileDialog.AcceptSave)
+                            if saveDir != '':
+                                try:
+                                    copyfile(Globals.distroLink, saveDir + '/TimeKeeper.exe')
+                                    QMessageBox.information(self, 'Update Downloaded',
+                                                            'The latest version of the application has been downloaded'
+                                                            ' to\n\n{}.'.format(saveDir))
+                                except IOError:
+                                    QMessageBox.warning(self, 'Download Error', 'The selected directory contains a file '
+                                                                                'with the name \"TimeKeeper.exe\" and '
+                                                                                'it is currently in use.\n\nTo try and '
+                                                                                'download to a different directory select '
+                                                                                '\"Check for updates...\" from the '
+                                                                                'Help menu once the programs launches.')
+                            else:
+                                print('Download Cancelled')
+                                pass
+
                         else:
-                            print('Download Cancelled')
                             pass
 
-                    else:
-                        pass
-
-                if pub_ver == int_ver or pub_ver < int_ver and not Globals.loading:
-                    print(Globals.msgVersionGood)
-                    QMessageBox.information(self, 'No Update',
-                                            'No updates are available at this time.')
-        except subprocess.CalledProcessError:
-            print(Globals.msgNetworkDown)
-            QMessageBox.information(self, 'Network unreachable',
-                                    'X drive cannot be reached, check network connection')
+                    if pub_ver == int_ver or pub_ver < int_ver:
+                        print(Globals.msgVersionGood)
+                        QMessageBox.information(self, 'No Update',
+                                                'No updates are available at this time.')
+            except subprocess.CalledProcessError:
+                print(Globals.msgNetworkDown)
+                QMessageBox.information(self, 'Network unreachable',
+                                        'X drive cannot be reached, check network connection')
+        else:
+            pass
 
     def save_event(self):
         print(Globals.msgSave)
