@@ -346,7 +346,7 @@ class TimeLoggerUi(QWidget):
                     and self.comment != '' and self.comment is not None:
                 # append the entered comment, if entered, into the comments field
                 content = self.dg_totals.item(row, 2)
-                if not content:
+                if content.text() == '':
                     self.dg_totals.setItem(row, 2, QTableWidgetItem())
                     # if content == '':
                     self.dg_totals.item(row, 2).setText('{}'.format(self.comment))
