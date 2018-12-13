@@ -4,6 +4,7 @@ import webbrowser
 from datetime import datetime
 from math import ceil
 from os import path
+from shutil import copyfile
 from time import localtime, strftime
 from win32api import GetFileVersionInfo, LOWORD, HIWORD
 
@@ -11,7 +12,8 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QKeySequence, QFont
 from PySide2.QtWidgets import (QApplication, QComboBox, QDialog, QWidget, QGridLayout, QHBoxLayout, QHeaderView,
                                QInputDialog, QLabel, QListWidget, QMessageBox, QPushButton, QTableWidget,
-                               QTableWidgetItem, QVBoxLayout, QMainWindow, QAction, QFrame, QAbstractItemView)
+                               QTableWidgetItem, QVBoxLayout, QMainWindow, QAction, QFrame, QAbstractItemView,
+                               QFileDialog)
 
 import Globals
 from DigitalClock import DigitalClock
@@ -91,21 +93,53 @@ class MainWindow(QMainWindow):
             response = subprocess.check_call(['ping', '-n', '1', '-w', '100', '166.20.109.130'], shell=True)
             if response == 0:
                 int_ver = get_version_number(sys.executable)
-                pub_ver = get_version_number('X:\\PE\\00 New Hire Stuff\\TimeKeeper.exe')
+                pub_ver = get_version_number(Globals.distroLink)
                 if pub_ver > int_ver:
                     print(Globals.msgNewVersion)
-                    QMessageBox.information(self, Globals.strUpdateTitle,
-                                            Globals.strUpdate +
-                                            '\nCurrent Version: {0}.{1}.{2}.{3}\n'
-                                            'Available Version: {4}.{5}.{6}.{7}\n'
-                                            .format(*int_ver, *pub_ver))
+                    msgBox = QMessageBox()
+                    msgBox.setWindowIcon(QIcon('timetable.png'))
+                    msgBox.setWindowTitle(Globals.strUpdateTitle)
+                    msgBox.setTextFormat(Qt.RichText)
+                    msgBox.setWindowFlag(Qt.WindowStaysOnTopHint)
+                    msgBox.setText('Current Version: {0}.{1}.{2}.{3}<br>'.format(*int_ver)
+                                   + 'Available Version: {0}.{1}.{2}.{3}<br><br>'.format(*pub_ver)
+                                   + 'Download Now?')
+
+                    msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
+                    result = msgBox.exec_()
+
+                    if result == QMessageBox.Save:
+                        dialog = QFileDialog()
+                        saveDir = dialog.getExistingDirectory(self, 'Select Save Directory')
+                        dialog.setAcceptMode(QFileDialog.AcceptSave)
+                        if saveDir != '':
+                            try:
+                                copyfile(Globals.distroLink, saveDir + '/TimeKeeper.exe')
+                                QMessageBox.information(self, 'Update Downloaded',
+                                                        'The latest version of the application has been downloaded'
+                                                        ' to\n\n{}.'.format(saveDir))
+                            except IOError:
+                                QMessageBox.warning(self, 'Download Error', 'The selected directory contains a file '
+                                                                            'with the name \"TimeKeeper.exe\" and '
+                                                                            'it is currently in use.\n\nTo try and '
+                                                                            'download to a different directory select '
+                                                                            '\"Check for updates...\" from the '
+                                                                            'Help menu once the programs launches.')
+                        else:
+                            print('Download Cancelled')
+                            pass
+
+                    else:
+                        pass
 
                 if pub_ver == int_ver or pub_ver < int_ver and not Globals.loading:
                     print(Globals.msgVersionGood)
-                    QMessageBox.information(self, 'No Update', 'No updates are available at this time.')
+                    QMessageBox.information(self, 'No Update',
+                                            'No updates are available at this time.')
         except subprocess.CalledProcessError:
             print(Globals.msgNetworkDown)
-            QMessageBox.information(self, 'Network unreachable', 'X drive cannot be reached, check network connection')
+            QMessageBox.information(self, 'Network unreachable',
+                                    'X drive cannot be reached, check network connection')
 
     def save_event(self):
         print(Globals.msgSave)
@@ -114,7 +148,8 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         # Prompt the user and confirm they want to exit
         if not Globals.changes_saved:
-            result = QMessageBox.question(self, 'Exit', Globals.strExit, QMessageBox.Yes | QMessageBox.No)
+            result = QMessageBox.question(self, 'Exit', Globals.strExit,
+                                          QMessageBox.Yes | QMessageBox.No)
             if result == QMessageBox.Yes:
                 print(Globals.msgClosePgm)
                 sys.exit()
@@ -126,8 +161,18 @@ class MainWindow(QMainWindow):
 
     def about_info(self):
         email = 'mailto:Gary.Haag@L3T.com?Subject=Time%20Keeper%20App'
-        QMessageBox.about(self, 'About TimeKeeper',
-                          'Version: 1.1<br>Creator: Gary Haag<br>Email: <a href=%s>Gary.Haag@L3T.com</a>' % email)
+        ver = get_version_number(sys.executable)
+        about = QMessageBox()
+        about.setWindowTitle(path.basename(__file__))
+        about.setWindowFlag(Qt.WindowStaysOnTopHint)
+        # about.setStyleSheet("QLabel{min-width: 200px;}")
+        about.setIconPixmap('timetable.png')
+        about.setWindowIcon(QIcon('timetable.png'))
+        about.setText('Version: %s.%s.%s<br><br>' % (ver[0], ver[1], ver[2])
+                      + 'Author: Gary Haag<br><br>'
+                      + 'Email: <a href=%s>Gary.Haag@L3T.com</a>' % email
+                      )
+        about.exec_()
 
     def keyPressEvent(self, event):
         # Redirect the native esc hot key to the close event prompt
@@ -300,7 +345,7 @@ class TimeLoggerUi(QWidget):
                 content = self.dg_totals.item(row, 2)
                 if not content:
                     self.dg_totals.setItem(row, 2, QTableWidgetItem())
-                # if content == '':
+                    # if content == '':
                     self.dg_totals.item(row, 2).setText('{}'.format(self.comment))
                 else:
                     self.dg_totals.item(row, 2).setText('{}, {}'.format(content.text(), self.comment))
@@ -386,6 +431,7 @@ class TimeLoggerUi(QWidget):
         reset_popup = QMessageBox()
         result = reset_popup.question(
             self, Globals.strResetTitle, Globals.strReset, reset_popup.Yes | reset_popup.No)
+        reset_popup.setIconPixmap('timetable.png')
         if result == reset_popup.No:
             print(Globals.msgResetAbort)
         else:
@@ -436,6 +482,7 @@ class UiProgramEditor(QDialog):
         self.layout.addLayout(self.button_box)
         self.button_box.addWidget(self.btn_delete)
         self.button_box.addWidget(self.btn_add)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
         self.setLayout(self.layout)
 
     def program_selected(self):
@@ -443,7 +490,7 @@ class UiProgramEditor(QDialog):
 
     def program_delete(self):
         del_popup = QMessageBox()
-        result = del_popup.warning(
+        result = del_popup.critical(
             self, Globals.strDeleteTitle, Globals.strDelete,
             del_popup.Yes | del_popup.No)
         if result == del_popup.No:
@@ -455,7 +502,6 @@ class UiProgramEditor(QDialog):
             self.btn_delete.setEnabled(False)
             Globals.gblPgmList[0].pop(self.list_programs.currentRow())
             Globals.gblPgmList[1].pop(self.list_programs.currentRow())
-            # self.list_programs.takeItem(self.list_programs.currentRow())
             self.list_programs.clear()
             self.list_programs.addItems(Globals.gblPgmList[0])
             Globals.changes_saved = False
