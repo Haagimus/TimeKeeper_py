@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
                                             'Available Version: {4}.{5}.{6}.{7}\n'
                                             .format(*int_ver, *pub_ver))
 
-                if pub_ver == int_ver and not Globals.loading:
+                if pub_ver == int_ver or pub_ver < int_ver and not Globals.loading:
                     print(Globals.msgVersionGood)
                     QMessageBox.information(self, 'No Update', 'No updates are available at this time.')
         except subprocess.CalledProcessError:
@@ -297,11 +297,13 @@ class TimeLoggerUi(QWidget):
             if self.dg_totals.item(row, 0).text() == self.cmb_pgm.currentText() \
                     and self.comment != '' and self.comment is not None:
                 # append the entered comment, if entered, into the comments field
-                content = self.dg_totals.item(row, 2).text()
-                if content == '':
+                content = self.dg_totals.item(row, 2)
+                if not content:
+                    self.dg_totals.setItem(row, 2, QTableWidgetItem())
+                # if content == '':
                     self.dg_totals.item(row, 2).setText('{}'.format(self.comment))
                 else:
-                    self.dg_totals.item(row, 2).setText('{}, {}'.format(content, self.comment))
+                    self.dg_totals.item(row, 2).setText('{}, {}'.format(content.text(), self.comment))
                 self.comment = None
 
     def update_totals(self):
@@ -309,7 +311,7 @@ class TimeLoggerUi(QWidget):
         self.dg_log.blockSignals(True)
         for hrs in range(len(Globals.gblPgmList[1])):
             Globals.gblPgmList[1][hrs] = 0.0
-        # Update the calculated totals in the totals gid
+        # Update the calculated totals in the totals grid
         for pgm in Globals.gblPgmList[0]:
             try:
                 for i in range(self.dg_log.rowCount()):
