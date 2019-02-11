@@ -120,12 +120,13 @@ class MainWindow(QMainWindow):
                                                             'The latest version of the application has been downloaded'
                                                             ' to\n\n{}.'.format(saveDir))
                                 except IOError:
-                                    QMessageBox.warning(self, 'Download Error', 'The selected directory contains a file '
-                                                                                'with the name \"TimeKeeper.exe\" and '
-                                                                                'it is currently in use.\n\nTo try and '
-                                                                                'download to a different directory select '
-                                                                                '\"Check for updates...\" from the '
-                                                                                'Help menu once the programs launches.')
+                                    QMessageBox.warning(self, 'Download Error',
+                                                        'The selected directory contains a file '
+                                                        'with the name \"TimeKeeper.exe\" and '
+                                                        'it is currently in use.\n\nTo try and '
+                                                        'download to a different directory select '
+                                                        '\"Check for updates...\" from the '
+                                                        'Help menu once the programs launches.')
                             else:
                                 print('Download Cancelled')
                                 pass
@@ -382,12 +383,20 @@ class TimeLoggerUi(QWidget):
         self.dg_log.blockSignals(True)
         current_time = localtime()
         next_row = self.dg_log.rowCount()
-        self.dg_log.insertRow(next_row)
-        self.dg_log.setItem(next_row, 0, QTableWidgetItem(self.cmb_pgm.currentText()))
-        self.dg_log.setItem(next_row, 1, QTableWidgetItem(strftime('%H:%M', current_time)))
-        self.dg_log.setItem(next_row, 2, QTableWidgetItem('In'))
+        if next_row == 0:
+            pass
+        else:
+            item = self.dg_log.item(next_row - 1, 2).text()
+            if item != 'Out':
+                print(Globals.msgClockInErr)
+                pass
+            else:
+                self.dg_log.insertRow(next_row)
+                self.dg_log.setItem(next_row, 0, QTableWidgetItem(self.cmb_pgm.currentText()))
+                self.dg_log.setItem(next_row, 1, QTableWidgetItem(strftime('%H:%M', current_time)))
+                self.dg_log.setItem(next_row, 2, QTableWidgetItem('In'))
+                Globals.changes_saved = False
         self.dg_log.scrollToBottom()
-        Globals.changes_saved = False
         self.dg_log.blockSignals(False)
 
     def clock_out(self):
@@ -396,25 +405,28 @@ class TimeLoggerUi(QWidget):
         self.dg_log.blockSignals(True)
         end_time = strftime('%H:%M', localtime())
         next_row = self.dg_log.rowCount()
-        self.dg_log.insertRow(next_row)
-        self.dg_log.setItem(next_row, 0, QTableWidgetItem(self.cmb_pgm.currentText()))
-        self.dg_log.setItem(next_row, 1, QTableWidgetItem(end_time)), self.dg_log.setItem(next_row, 2,
-                                                                                          QTableWidgetItem('Out'))
+
         if next_row == 0:
             pass
         else:
             item = self.dg_log.item(next_row - 1, 2).text()
             if item != 'In':
+                print(Globals.msgClockOutErr)
                 pass
             else:
+                self.dg_log.insertRow(next_row)
+                self.dg_log.setItem(next_row, 0, QTableWidgetItem(self.cmb_pgm.currentText()))
+                self.dg_log.setItem(next_row, 1, QTableWidgetItem(end_time)), self.dg_log.setItem(next_row, 2,
+                                                                                                  QTableWidgetItem(
+                                                                                                      'Out'))
                 start_time = self.dg_log.item(next_row - 1, 1).text()
                 time_diff = datetime.strptime(end_time, '%H:%M') - datetime.strptime(start_time, '%H:%M')
                 self.dg_log.setItem(next_row, 3,
                                     QTableWidgetItem(str(ceil((time_diff.seconds / 60 / 60) * 10) / 10.0)))
-            self.get_comment()
-            self.update_totals()
+                self.get_comment()
+                self.update_totals()
+                Globals.changes_saved = False
         self.dg_log.scrollToBottom()
-        Globals.changes_saved = False
         self.dg_log.blockSignals(False)
 
     def get_comment(self):

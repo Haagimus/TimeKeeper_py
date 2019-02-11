@@ -24,7 +24,9 @@ msgNetworkDown = dtg + ': The required network connection could not be found, ab
 
 # Function call messages
 msgClockIn = dtg + ': Executing the Clock In function'
+msgClockInErr = dtg + ': Last entry was a Clock In function, aborting'
 msgClockOut = dtg + ': Executing the Clock Out function'
+msgClockOutErr = dtg + ': Last entry was a Clock In function, aborting'
 msgResetAbort = dtg + ': Reset action cancelled'
 msgResetConfirm = dtg + ': Resetting all logs'
 msgPopTotals = dtg + ': Populating the totals grid'
