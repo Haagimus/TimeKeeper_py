@@ -415,7 +415,8 @@ class TimeLoggerUi(QWidget):
                 pass
             else:
                 self.dg_log.insertRow(next_row)
-                self.dg_log.setItem(next_row, 0, QTableWidgetItem(self.cmb_pgm.currentText()))
+                _lastProgramEntry = self.dg_log.item(next_row - 1, 0).text()
+                self.dg_log.setItem(next_row, 0, QTableWidgetItem(_lastProgramEntry))
                 self.dg_log.setItem(next_row, 1, QTableWidgetItem(end_time)), self.dg_log.setItem(next_row, 2,
                                                                                                   QTableWidgetItem(
                                                                                                       'Out'))
