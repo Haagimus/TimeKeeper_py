@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
 
     def version_check(self):
         print(Globals.msgCheckingVersion)
-        if not Globals.loading:
+        if Globals.loading:
             try:
                 response = subprocess.check_call(['ping', '-n', '1', '-w', '100', '166.20.109.130'], shell=True)
                 if response == 0:
