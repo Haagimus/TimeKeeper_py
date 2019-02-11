@@ -346,7 +346,7 @@ class TimeLoggerUi(QWidget):
                     and self.comment != '' and self.comment is not None:
                 # append the entered comment, if entered, into the comments field
                 content = self.dg_totals.item(row, 2)
-                if content.text() == '':
+                if not content or content.text() == '':
                     self.dg_totals.setItem(row, 2, QTableWidgetItem())
                     # if content == '':
                     self.dg_totals.item(row, 2).setText('{}'.format(self.comment))
@@ -366,7 +366,7 @@ class TimeLoggerUi(QWidget):
                     if self.dg_log.item(i, 2).text() == 'Out' and self.dg_log.item(i, 0).text() == pgm:
                         p_idx = Globals.gblPgmList[0].index(pgm)
                         Globals.gblPgmList[1][p_idx] += float(self.dg_log.item(i, 3).text())
-            except AttributeError:
+            except Exception:
                 pass
         self.populate_totals_grid()
         total_hrs = 0.0

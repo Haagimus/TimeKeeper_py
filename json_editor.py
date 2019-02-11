@@ -19,6 +19,10 @@ import Globals
 
 def gui_save(form):
     print(Globals.msgSave)
+    if not path.exists(Globals.programsPath):
+        print(Globals.msgCreatingPrograms)
+        mkdir(Globals.programsPath)
+
     if not path.exists(Globals.filepath):
         print(Globals.msgCreatingDir)
         mkdir(Globals.filepath)

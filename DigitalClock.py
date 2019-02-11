@@ -16,6 +16,6 @@ class DigitalClock(QLCDNumber):
     def show_time(self):
         time = QTime.currentTime()
         text = time.toString('hh:mm')
-        if(time.second() % 2) == 0:
+        if (time.second() % 2) == 0:
             text = text[:2] + ' ' + text[3:]
         self.display(text)

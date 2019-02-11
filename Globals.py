@@ -2,6 +2,7 @@ from os.path import expanduser
 from time import strftime, localtime
 
 gblPgmList = [[], []]
+programsPath = expanduser('~\AppData\Local\Programs\\')
 filepath = expanduser('~\AppData\Local\Programs\TimeKeeper\\')
 dtg = strftime('%D %H:%M:%S', localtime())
 changes_saved = False
@@ -38,6 +39,7 @@ msgClosePgm = dtg + ': Exiting the application'
 msgRestore = dtg + ': Restoring previous session data'
 msgSave = dtg + ': Saving current session data'
 msgCreatingDir = dtg + ': ' + filepath + ' not found, creating directory'
+msgCreatingPrograms = dtg + ': ' + programsPath + ' not found, creating directory'
 msgDeleteJson = dtg + ': Removing old Json so new settings can be saved'
 
 # Popup window messages
