@@ -23,7 +23,6 @@ from json_editor import gui_restore, gui_save
 def get_version_number(filename):
     try:
         info = GetFileVersionInfo(filename, "\\")
-        # info = GetFileVersionInfo('C:\\Users\\ghaag\\Programming\\Python Projects\\Time Logger\\TimeKeeper.py', '\\')
         ms = info['FileVersionMS']
         ls = info['FileVersionLS']
         return HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls)
