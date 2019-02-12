@@ -384,7 +384,10 @@ class TimeLoggerUi(QWidget):
         current_time = localtime()
         next_row = self.dg_log.rowCount()
         if next_row == 0:
-            pass
+            self.dg_log.insertRow(next_row)
+            self.dg_log.setItem(next_row, 0, QTableWidgetItem(self.cmb_pgm.currentText()))
+            self.dg_log.setItem(next_row, 1, QTableWidgetItem(strftime('%H:%M', current_time)))
+            self.dg_log.setItem(next_row, 2, QTableWidgetItem('In'))
         else:
             item = self.dg_log.item(next_row - 1, 2).text()
             if item != 'Out':
