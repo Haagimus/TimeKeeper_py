@@ -23,10 +23,11 @@ from json_editor import gui_restore, gui_save
 def get_version_number(filename):
     try:
         info = GetFileVersionInfo(filename, "\\")
+        # info = GetFileVersionInfo('C:\\Users\\ghaag\\Programming\\Python Projects\\Time Logger\\TimeKeeper.py', '\\')
         ms = info['FileVersionMS']
         ls = info['FileVersionLS']
         return HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls)
-    except:
+    except Exception:
         return 'Version not found'
 
 
@@ -87,63 +88,61 @@ class MainWindow(QMainWindow):
         Globals.loading = False
         print(Globals.msgLoadingComplete)
 
+    # noinspection PyCallByClass
     def version_check(self):
         print(Globals.msgCheckingVersion)
-        if Globals.loading:
-            try:
-                response = subprocess.check_call(['ping', '-n', '1', '-w', '100', '166.20.109.130'], shell=True)
-                if response == 0:
-                    int_ver = get_version_number(sys.executable)
-                    pub_ver = get_version_number(Globals.distroLink)
-                    if pub_ver > int_ver:
-                        print(Globals.msgNewVersion)
-                        msgBox = QMessageBox()
-                        msgBox.setWindowIcon(QIcon('timetable.png'))
-                        msgBox.setWindowTitle(Globals.strUpdateTitle)
-                        msgBox.setTextFormat(Qt.RichText)
-                        msgBox.setWindowFlag(Qt.WindowStaysOnTopHint)
-                        msgBox.setText('Current Version: {0}.{1}.{2}.{3}<br>'.format(*int_ver)
-                                       + 'Available Version: {0}.{1}.{2}.{3}<br><br>'.format(*pub_ver)
-                                       + 'Download Now?')
+        try:
+            response = subprocess.check_call(['ping', '-n', '1', '-w', '100', '166.20.109.130'], shell=True)
+            if response == 0:
+                int_ver = get_version_number(sys.executable)
+                pub_ver = get_version_number(Globals.distroLink)
+                if pub_ver > int_ver:
+                    print(Globals.msgNewVersion)
+                    msg_box = QMessageBox()
+                    msg_box.setWindowIcon(QIcon('timetable.png'))
+                    msg_box.setWindowTitle(Globals.strUpdateTitle)
+                    msg_box.setTextFormat(Qt.RichText)
+                    msg_box.setWindowFlag(Qt.WindowStaysOnTopHint)
+                    msg_box.setText('Current Version: {0}.{1}.{2}.{3}<br>'.format(*int_ver)
+                                    + 'Available Version: {0}.{1}.{2}.{3}<br><br>'.format(*pub_ver)
+                                    + 'Download Now?')
 
-                        msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
-                        result = msgBox.exec_()
+                    msg_box.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
+                    result = msg_box.exec_()
 
-                        if result == QMessageBox.Save:
-                            dialog = QFileDialog()
-                            saveDir = dialog.getExistingDirectory(self, 'Select Save Directory')
-                            dialog.setAcceptMode(QFileDialog.AcceptSave)
-                            if saveDir != '':
-                                try:
-                                    copyfile(Globals.distroLink, saveDir + '/TimeKeeper.exe')
-                                    QMessageBox.information(self, 'Update Downloaded',
-                                                            'The latest version of the application has been downloaded'
-                                                            ' to\n\n{}.'.format(saveDir))
-                                except IOError:
-                                    QMessageBox.warning(self, 'Download Error',
-                                                        'The selected directory contains a file '
-                                                        'with the name \"TimeKeeper.exe\" and '
-                                                        'it is currently in use.\n\nTo try and '
-                                                        'download to a different directory select '
-                                                        '\"Check for updates...\" from the '
-                                                        'Help menu once the programs launches.')
-                            else:
-                                print('Download Cancelled')
-                                pass
-
+                    if result == QMessageBox.Save:
+                        dialog = QFileDialog()
+                        save_dir = dialog.getExistingDirectory(self, 'Select Save Directory')
+                        dialog.setAcceptMode(QFileDialog.AcceptSave)
+                        if save_dir != '':
+                            try:
+                                copyfile(Globals.distroLink, save_dir + '/TimeKeeper.exe')
+                                QMessageBox.information(self, 'Update Downloaded',
+                                                        'The latest version of the application has been downloaded'
+                                                        ' to\n\n{}.'.format(save_dir))
+                            except IOError:
+                                QMessageBox.warning(self, 'Download Error',
+                                                    'The selected directory contains a file '
+                                                    'with the name \"TimeKeeper.exe\" and '
+                                                    'it is currently in use.\n\nTo try and '
+                                                    'download to a different directory select '
+                                                    '\"Check for updates...\" from the '
+                                                    'Help menu once the programs launches.')
                         else:
+                            print('Download Cancelled')
                             pass
 
-                    if pub_ver == int_ver or pub_ver < int_ver:
-                        print(Globals.msgVersionGood)
-                        QMessageBox.information(self, 'No Update',
-                                                'No updates are available at this time.')
-            except subprocess.CalledProcessError:
-                print(Globals.msgNetworkDown)
-                QMessageBox.information(self, 'Network unreachable',
-                                        'X drive cannot be reached, check network connection')
-        else:
-            pass
+                    else:
+                        pass
+
+                if pub_ver == int_ver or pub_ver < int_ver:
+                    print(Globals.msgVersionGood)
+                    QMessageBox.information(self, 'No Update',
+                                            'No updates are available at this time.')
+        except subprocess.CalledProcessError:
+            print(Globals.msgNetworkDown)
+            QMessageBox.information(self, 'Network unreachable',
+                                    'X drive cannot be reached, check network connection')
 
     def save_event(self):
         print(Globals.msgSave)
@@ -474,6 +473,7 @@ class TimeLoggerUi(QWidget):
         webbrowser.open(Globals.deltek_url)
 
 
+# noinspection PyCallByClass
 class UiProgramEditor(QDialog):
     def __init__(self, parent=None):
         super(UiProgramEditor, self).__init__(parent)
