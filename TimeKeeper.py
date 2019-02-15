@@ -30,6 +30,32 @@ def get_version_number(filename):
         return 'Version not found'
 
 
+def custom_msg_box(title, text, buttons, type=None):
+    if type == 'Question':
+        _type = QMessageBox.Question
+    elif type == 'Information':
+        _type = QMessageBox.Information
+    elif type == 'Critical':
+        _type = QMessageBox.Critical
+    elif type == 'Warning':
+        _type = QMessageBox.Warning
+    elif type is None:
+        _type = None
+
+    _msgBox = QMessageBox()
+    _msgBox.setWindowIcon(QIcon('timetable.png'))
+    if _type is not None:
+        _msgBox.setIcon(_type)
+    else:
+        pass
+    _msgBox.setWindowTitle(title)
+    _msgBox.setTextFormat(Qt.RichText)
+    _msgBox.setWindowFlag(Qt.WindowStaysOnTopHint)
+    _msgBox.setText(text)
+    _msgBox.setStandardButtons(buttons)
+    return _msgBox
+
+
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -96,17 +122,12 @@ class MainWindow(QMainWindow):
                 pub_ver = get_version_number(Globals.distroLink)
                 if pub_ver > int_ver:
                     print(Globals.msgNewVersion)
-                    msg_box = QMessageBox()
-                    msg_box.setWindowIcon(QIcon('timetable.png'))
-                    msg_box.setIcon(QMessageBox.Question)
-                    msg_box.setWindowTitle(Globals.strUpdateTitle)
-                    msg_box.setTextFormat(Qt.RichText)
-                    msg_box.setWindowFlag(Qt.WindowStaysOnTopHint)
-                    msg_box.setText('Current Version: {0}.{1}.{2}.{3}<br>'.format(*int_ver)
-                                    + 'Available Version: {0}.{1}.{2}.{3}<br><br>'.format(*pub_ver)
-                                    + 'Download Now?')
-
-                    msg_box.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
+                    msg_box = custom_msg_box(type='Question',
+                                             title=Globals.strUpdateTitle,
+                                             text='Current Version: {0}.{1}.{2}.{3}<br>'.format(*int_ver)
+                                                  + 'Available Version: {0}.{1}.{2}.{3}<br><br>'.format(*pub_ver)
+                                                  + 'Download Now?',
+                                             buttons=(QMessageBox.Save | QMessageBox.Cancel))
                     result = msg_box.exec_()
 
                     if result == QMessageBox.Save:
@@ -116,30 +137,21 @@ class MainWindow(QMainWindow):
                         if save_dir != '':
                             try:
                                 copyfile(Globals.distroLink, save_dir + '/TimeKeeper.exe')
-                                msg_box = QMessageBox()
-                                msg_box.setWindowIcon(QIcon('timetable.png'))
-                                msg_box.setIcon(QMessageBox.Information)
-                                msg_box.setWindowTitle('Update Downloaded')
-                                msg_box.setTextFormat(Qt.RichText)
-                                msg_box.setWindowFlag(Qt.WindowStaysOnTopHint)
-                                msg_box.setText('The latest version of the application has been downloaded'
-                                                ' to\n\n{}.'.format(save_dir))
-                                msg_box.setStandardButtons(QMessageBox.Ok)
+                                msg_box = custom_msg_box(type='Information',
+                                                         title='Update Downloaded',
+                                                         text='The latest version of the application has been '
+                                                              'downloaded to\n\n{}.'.format(save_dir),
+                                                         buttons=QMessageBox.Ok)
                                 msg_box.exec_()
                             except IOError:
-                                msg_box = QMessageBox()
-                                msg_box.setWindowIcon(QIcon('timetable.png'))
-                                msg_box.setIcon(QMessageBox.Warning)
-                                msg_box.setWindowTitle('Download Error')
-                                msg_box.setTextFormat(Qt.RichText)
-                                msg_box.setWindowFlag(Qt.WindowStaysOnTopHint)
-                                msg_box.setText('The selected directory contains a file '
-                                                'with the name \"TimeKeeper.exe\" and '
-                                                'it is currently in use.\n\nTo try and '
-                                                'download to a different directory select '
-                                                '\"Check for updates...\" from the '
-                                                'Help menu once the programs launches.')
-                                msg_box.setStandardButtons(QMessageBox.Ok)
+                                msg_box = custom_msg_box(type='Warning',
+                                                         title='Download Error',
+                                                         text='The selected directory contains a file with the name '
+                                                              '\"TimeKeeper.exe\" and it is currently in use.\n\n'
+                                                              'To try and download to a different directory select '
+                                                              '\"Check for updates...\" '
+                                                              'from the Help menu once the programs launches.',
+                                                         buttons=QMessageBox.Ok)
                                 msg_box.exec_()
                         else:
                             print('Download Cancelled')
@@ -150,25 +162,17 @@ class MainWindow(QMainWindow):
 
                 if pub_ver == int_ver or pub_ver < int_ver:
                     print(Globals.msgVersionGood)
-                    msg_box = QMessageBox()
-                    msg_box.setWindowIcon(QIcon('timetable.png'))
-                    msg_box.setIcon(QMessageBox.Information)
-                    msg_box.setWindowTitle('No Update')
-                    msg_box.setTextFormat(Qt.RichText)
-                    msg_box.setWindowFlag(Qt.WindowStaysOnTopHint)
-                    msg_box.setText('No updates are available at this time.')
-                    msg_box.setStandardButtons(QMessageBox.Ok)
+                    msg_box = custom_msg_box(type='Information',
+                                             title='No Update',
+                                             text='No updates are available at this time.',
+                                             buttons=QMessageBox.Ok)
                     msg_box.exec_()
         except subprocess.CalledProcessError:
             print(Globals.msgNetworkDown)
-            msg_box = QMessageBox()
-            msg_box.setWindowIcon(QIcon('timetable.png'))
-            msg_box.setIcon(QMessageBox.Critical)
-            msg_box.setWindowTitle('Network unreachable')
-            msg_box.setTextFormat(Qt.RichText)
-            msg_box.setWindowFlag(Qt.WindowStaysOnTopHint)
-            msg_box.setText('X drive cannot be reached, check network connection')
-            msg_box.setStandardButtons(QMessageBox.Ok)
+            msg_box = custom_msg_box(type='Critical',
+                                     title='Network unreachable',
+                                     text='X drive cannot be reached, check network connection',
+                                     buttons=QMessageBox.Ok)
             msg_box.exec_()
 
     def save_event(self):
@@ -178,14 +182,10 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         # Prompt the user and confirm they want to exit
         if not Globals.changes_saved:
-            msg_box = QMessageBox()
-            msg_box.setWindowIcon(QIcon('timetable.png'))
-            msg_box.setIcon(QMessageBox.Question)
-            msg_box.setWindowTitle('Exit')
-            msg_box.setTextFormat(Qt.RichText)
-            msg_box.setWindowFlag(Qt.WindowStaysOnTopHint)
-            msg_box.setText(Globals.strExit)
-            msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msg_box = custom_msg_box(type='Question',
+                                     title='Exit',
+                                     text=Globals.strExit,
+                                     buttons=(QMessageBox.Yes | QMessageBox.No))
             result = msg_box.exec_()
             if result == QMessageBox.Yes:
                 print(Globals.msgClosePgm)
@@ -200,16 +200,12 @@ class MainWindow(QMainWindow):
     def about_info():
         email = 'mailto:Gary.Haag@L3T.com?Subject=Time%20Keeper%20App'
         ver = get_version_number(sys.executable)
-        about = QMessageBox()
-        about.setWindowTitle(path.basename(__file__))
-        about.setWindowFlag(Qt.WindowStaysOnTopHint)
-        # about.setStyleSheet("QLabel{min-width: 200px;}")
+        about = custom_msg_box(title=path.basename(__file__),
+                               text='Version: %s.%s.%s<br><br>' % (ver[0], ver[1], ver[2])
+                                    + 'Author: Gary Haag<br><br>'
+                                    + 'Email: <a href=%s>Gary.Haag@L3T.com</a>' % email,
+                               buttons=QMessageBox.Ok)
         about.setIconPixmap('timetable.png')
-        about.setWindowIcon(QIcon('timetable.png'))
-        about.setText('Version: %s.%s.%s<br><br>' % (ver[0], ver[1], ver[2])
-                      + 'Author: Gary Haag<br><br>'
-                      + 'Email: <a href=%s>Gary.Haag@L3T.com</a>' % email
-                      )
         about.exec_()
 
     def keyPressEvent(self, event):
@@ -219,8 +215,10 @@ class MainWindow(QMainWindow):
         # Add delete hot key, if a row is actively selected in the dg_log, delete it
         if event.key() == Qt.Key_Delete and self.time_logger_widget.dg_log.hasFocus() is True:
             # noinspection PyCallByClass
-            result = QMessageBox.question(self, 'Confirm Delete', Globals.strDeleteLog,
-                                          QMessageBox.Yes | QMessageBox.No)
+            result = custom_msg_box(type='Question',
+                                    title='Confirm Delete',
+                                    text=Globals.strDeleteLog,
+                                    buttons=(QMessageBox.Yes | QMessageBox.No))
             if result == QMessageBox.Yes:
                 self.time_logger_widget.dg_log.removeRow(self.time_logger_widget.dg_log.currentRow())
                 self.time_logger_widget.update_totals()
