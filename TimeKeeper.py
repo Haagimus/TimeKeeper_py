@@ -219,6 +219,7 @@ class MainWindow(QMainWindow):
                                     title='Confirm Delete',
                                     text=Globals.strDeleteLog,
                                     buttons=(QMessageBox.Yes | QMessageBox.No))
+            result = result.exec_()
             if result == QMessageBox.Yes:
                 self.time_logger_widget.dg_log.removeRow(self.time_logger_widget.dg_log.currentRow())
                 self.time_logger_widget.update_totals()
@@ -482,10 +483,11 @@ class TimeLoggerUi(QWidget):
 
     def reset_grids(self):
         # Reset the data grids
-        reset_popup = QMessageBox()
-        result = reset_popup.question(
-            self, Globals.strResetTitle, Globals.strReset, reset_popup.Yes | reset_popup.No)
-        reset_popup.setIconPixmap('timetable.png')
+        reset_popup = custom_msg_box(title=Globals.strResetTitle,
+                                     text=Globals.strReset,
+                                     buttons=(QMessageBox.Yes | QMessageBox.No),
+                                     type='Question')
+        result = reset_popup.exec_()
         if result == reset_popup.No:
             print(Globals.msgResetAbort)
         else:
