@@ -1,0 +1,6 @@
+.idea
+.vscode
+Archive
+*.log
+*.json
+*.bat
